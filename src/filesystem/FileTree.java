@@ -7,6 +7,8 @@
 package filesystem;
 
 import java.awt.Desktop;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -15,6 +17,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
@@ -24,6 +28,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 /**
+ * 
  *
  * @author oscar
  */
@@ -35,6 +40,7 @@ public class FileTree extends JFrame{
     private JTextArea fileDetailsTextArea = new JTextArea();
     private DefaultMutableTreeNode root;
     private DefaultMutableTreeNode node;
+    private JPopupMenu popupMenu = new JPopupMenu();
     
     public FileTree(File Dir){
         directyFile = Dir;
@@ -44,6 +50,7 @@ public class FileTree extends JFrame{
         model = new DefaultTreeModel(root);
         fileTree = new JTree(model);
         fileTree.addMouseListener(new mouseEventListener());
+        buildPopMenu();
     }
     
     private void findAllNode(DefaultMutableTreeNode parent){
@@ -119,7 +126,7 @@ public class FileTree extends JFrame{
                     }
                 }
             }else if(SwingUtilities.isRightMouseButton(e)){
-                //showpop
+                popupMenu.show(fileTree, e.getX(), e.getY());
             }
             
         }
@@ -140,7 +147,22 @@ public class FileTree extends JFrame{
         public void mouseExited(MouseEvent e) {
         }
     }
-    
+    private void buildPopMenu(){
+        ActionListener actionListener = (ActionListener) new PopupActionListener();
+        JMenuItem mkdirItem = new JMenuItem("newDir");
+        mkdirItem.addActionListener(actionListener);
+        JMenuItem deleteItem = new JMenuItem("delete");
+        deleteItem.addActionListener(actionListener);
+        JMenuItem copyItem = new JMenuItem("copy");
+        copyItem.addActionListener(actionListener);
+        JMenuItem pasteItem = new JMenuItem("paste");
+        pasteItem.addActionListener(actionListener);
+        popupMenu.add(mkdirItem);
+        popupMenu.add(deleteItem);
+        popupMenu.add(copyItem);
+        popupMenu.add(pasteItem);
+        fileTree.add(popupMenu);
+    }
     public void Layout(){
         
         
@@ -153,5 +175,46 @@ public class FileTree extends JFrame{
         setSize(640, 480);
         setVisible(true);
     }
+    private class PopupActionListener implements ActionListener {
+
+
+        @Override
+            public void actionPerformed(ActionEvent e) {
+                switch (e.getActionCommand()){
+
+                    case "newDir":
+                        mkDir();
+
+                        break;
+                    case "delete":
+                        delete();
+                        break;
+                    case "copy":
+                        break;
+                    case "paste":
+                        break;
+
+                }
+            }
+
+    }
+    private void mkDir(){
+        node = (DefaultMutableTreeNode) fileTree.
+                        getLastSelectedPathComponent();
+        File file = (File) node.getUserObject();
+        File newDir = new File(file.getPath()+"/newDir");
+        File parentFile = new File(file.getParent());
+        newDir.mkdir();
+        
+        model.insertNodeInto(new DefaultMutableTreeNode(newDir), node, node.getChildCount());
+        
+    }
+    private void delete(){
     
+        node = (DefaultMutableTreeNode) fileTree.
+                        getLastSelectedPathComponent();
+        File file = (File) node.getUserObject();
+        file.delete();
+        model.removeNodeFromParent(node);
+    }
 }
