@@ -6,13 +6,20 @@
 
 package filesystem;
 
+import java.awt.Desktop;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -27,19 +34,113 @@ public class FileTree extends JFrame{
     private File directyFile;
     private JTextArea fileDetailsTextArea = new JTextArea();
     private DefaultMutableTreeNode root;
+    private DefaultMutableTreeNode node;
     
     public FileTree(File Dir){
         directyFile = Dir;
         root  =   new  DefaultMutableTreeNode ( directyFile );
-        findAllNode();
+        findAllChild(root);
+        
         model = new DefaultTreeModel(root);
         fileTree = new JTree(model);
+        fileTree.addMouseListener(new mouseEventListener());
     }
     
-    private void findAllNode(){
-          
+    private void findAllNode(DefaultMutableTreeNode parent){
+        
+        File parentFile = (File)parent.getUserObject();
+        File f = null;
+        File [] childList = parentFile.listFiles();
+        DefaultMutableTreeNode newNode = null;
+        if(parentFile.listFiles() != null)
+        try {
+            for(int i=0;i< childList.length;i++){
+//            System.out.println(f.toString());
+            f = childList[i];
+            System.out.println(f.toString());
+            newNode = new DefaultMutableTreeNode(f);
+            parent.add(newNode);
+            if(f!=null&&f.isDirectory())
+            findAllNode((DefaultMutableTreeNode) parent.getChildAt(i));
+            
+            
+        }
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("f= "+f.toString());
+            System.out.println("TreeNode = " + newNode.toString());
+        }
+        
+//        for(int i = 0; i<parent.getChildCount();i++){
+//            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)parent.getChildAt(i);
+//            f = (File) treeNode.getUserObject();
+//            if(f.isDirectory()){
+//                findAllNode((DefaultMutableTreeNode) parent.getChildAt(i));
+//            }
+//        }
           
     }
+    private void findAllChild(DefaultMutableTreeNode parent){
+        File parentFile = (File)parent.getUserObject();
+        File f = null;
+        File [] childList = parentFile.listFiles();
+        DefaultMutableTreeNode newNode = null;
+        if(parentFile.listFiles() != null)
+        try {
+            for(int i=0;i< childList.length;i++){
+//                System.out.println(f.toString());
+                f = childList[i];
+                System.out.println(f.toString());
+                newNode = new DefaultMutableTreeNode(f);
+                parent.add(newNode);
+//                model.insertNodeInto(newNode, parent, i);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            System.out.println("f= "+f.toString());
+            System.out.println("TreeNode = " + newNode.toString());
+        }    
+    }
+    private class mouseEventListener implements MouseListener{
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if(e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)){
+                node = (DefaultMutableTreeNode) fileTree.
+                        getLastSelectedPathComponent();
+                File innerFile = (File) node.getUserObject();
+                if(innerFile.isDirectory())
+                    findAllChild(node);
+                else if(innerFile.isFile()){
+                    try {
+                        Desktop.getDesktop().open(innerFile);
+                    } catch (IOException ex) {
+                        Logger.getLogger(FileTree.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }else if(SwingUtilities.isRightMouseButton(e)){
+                //showpop
+            }
+            
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+        }
+    }
+    
     public void Layout(){
         
         
