@@ -24,6 +24,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -50,7 +52,9 @@ public class FileTree extends JFrame{
         model = new DefaultTreeModel(root);
         fileTree = new JTree(model);
         fileTree.addMouseListener(new mouseEventListener());
+        fileTree.addTreeSelectionListener(new FileTreeSelectionListener());
         buildPopMenu();
+        
     }
     
     private void findAllNode(DefaultMutableTreeNode parent){
@@ -78,13 +82,6 @@ public class FileTree extends JFrame{
             System.out.println("TreeNode = " + newNode.toString());
         }
         
-//        for(int i = 0; i<parent.getChildCount();i++){
-//            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode)parent.getChildAt(i);
-//            f = (File) treeNode.getUserObject();
-//            if(f.isDirectory()){
-//                findAllNode((DefaultMutableTreeNode) parent.getChildAt(i));
-//            }
-//        }
           
     }
     private void findAllChild(DefaultMutableTreeNode parent){
@@ -216,5 +213,25 @@ public class FileTree extends JFrame{
         File file = (File) node.getUserObject();
         file.delete();
         model.removeNodeFromParent(node);
+    }
+    private String getFileDetails(File file) {
+        if (file == null)
+          return "";
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Name: " + file.getName() + "\n");
+        buffer.append("Path: " + file.getPath() + "\n");
+        buffer.append("Size: " + file.length() + "\n");
+        buffer.append(file.isDirectory()?"Directory":"File"+"\n");
+        return buffer.toString();
+    }
+    private class FileTreeSelectionListener implements TreeSelectionListener{
+
+        @Override
+        public void valueChanged(TreeSelectionEvent e) {
+            node = (DefaultMutableTreeNode) fileTree.
+                            getLastSelectedPathComponent();
+            File file = (File) node.getUserObject();
+            fileDetailsTextArea.setText(getFileDetails(file));
+        }
     }
 }
