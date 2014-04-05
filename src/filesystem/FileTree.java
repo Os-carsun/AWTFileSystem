@@ -41,20 +41,39 @@ public class FileTree extends JFrame{
     private File directyFile;
     private JTextArea fileDetailsTextArea = new JTextArea();
     private DefaultMutableTreeNode root;
+    private DefaultMutableTreeNode InVisibleRoot;
     private DefaultMutableTreeNode node;
     private JPopupMenu popupMenu = new JPopupMenu();
     
     public FileTree(File Dir){
         directyFile = Dir;
+        InVisibleRoot = new DefaultMutableTreeNode();
+        
         root  =   new  DefaultMutableTreeNode ( directyFile );
+        InVisibleRoot.add(root);
         findAllChild(root);
         
-        model = new DefaultTreeModel(root);
+        model = new DefaultTreeModel(InVisibleRoot);
         fileTree = new JTree(model);
         fileTree.addMouseListener(new mouseEventListener());
         fileTree.addTreeSelectionListener(new FileTreeSelectionListener());
+        fileTree.setRootVisible(false);
         buildPopMenu();
         
+    }
+    public FileTree(File[] Dir){
+        InVisibleRoot = new DefaultMutableTreeNode();
+        for(File f : Dir){
+         node = new DefaultMutableTreeNode();
+         InVisibleRoot.add(node);
+         findAllChild(node);
+        }
+        model = new DefaultTreeModel(InVisibleRoot);
+        fileTree = new JTree(model);
+        fileTree.addMouseListener(new mouseEventListener());
+        fileTree.addTreeSelectionListener(new FileTreeSelectionListener());
+        fileTree.setRootVisible(false);
+        buildPopMenu();
     }
     
     private void findAllNode(DefaultMutableTreeNode parent){
@@ -222,6 +241,7 @@ public class FileTree extends JFrame{
         buffer.append("Path: " + file.getPath() + "\n");
         buffer.append("Size: " + file.length() + "\n");
         buffer.append(file.isDirectory()?"Directory":"File"+"\n");
+        
         return buffer.toString();
     }
     private class FileTreeSelectionListener implements TreeSelectionListener{
