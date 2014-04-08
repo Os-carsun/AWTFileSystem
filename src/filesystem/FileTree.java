@@ -7,6 +7,8 @@
 package filesystem;
 
 import java.awt.Desktop;
+import java.awt.Label;
+import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -15,9 +17,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -28,6 +32,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
 
 /**
  * 
@@ -132,8 +137,11 @@ public class FileTree extends JFrame{
                 node = (DefaultMutableTreeNode) fileTree.
                         getLastSelectedPathComponent();
                 File innerFile = (File) node.getUserObject();
-                if(innerFile.isDirectory())
+                if(innerFile.isDirectory()){
                     findAllChild(node);
+                    for(int i = 0 ; i<node.getChildCount();i++)
+                        findAllChild((DefaultMutableTreeNode)node.getChildAt(i));
+                }
                 else if(innerFile.isFile()){
                     try {
                         Desktop.getDesktop().open(innerFile);
@@ -169,23 +177,21 @@ public class FileTree extends JFrame{
         mkdirItem.addActionListener(actionListener);
         JMenuItem deleteItem = new JMenuItem("delete");
         deleteItem.addActionListener(actionListener);
-        JMenuItem copyItem = new JMenuItem("copy");
-        copyItem.addActionListener(actionListener);
-        JMenuItem pasteItem = new JMenuItem("paste");
-        pasteItem.addActionListener(actionListener);
+        JMenuItem renameItem = new JMenuItem("rename");
+        renameItem.addActionListener(actionListener);
+
         popupMenu.add(mkdirItem);
         popupMenu.add(deleteItem);
-        popupMenu.add(copyItem);
-        popupMenu.add(pasteItem);
+        popupMenu.add(renameItem);
+
         fileTree.add(popupMenu);
     }
     public void Layout(){
         
-        
         fileDetailsTextArea.setEditable(false);
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, new JScrollPane(
             fileTree), new JScrollPane(fileDetailsTextArea));
-
+        
         getContentPane().add(splitPane);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setSize(640, 480);
@@ -205,10 +211,10 @@ public class FileTree extends JFrame{
                     case "delete":
                         delete();
                         break;
-                    case "copy":
+                    case "rename":
+                        rename();
                         break;
-                    case "paste":
-                        break;
+
 
                 }
             }
@@ -232,6 +238,20 @@ public class FileTree extends JFrame{
         File file = (File) node.getUserObject();
         file.delete();
         model.removeNodeFromParent(node);
+    }
+    private void rename(){
+        node = (DefaultMutableTreeNode) fileTree.
+                        getLastSelectedPathComponent();
+        DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) node.getParent();
+        File file = (File) node.getUserObject();
+        String s = (String)JOptionPane.showInputDialog(this,"new file name",file.getName());
+        file.renameTo(new File(file.getPath().replace(file.getName(), "")+s));
+        
+        
+        model.insertNodeInto(new DefaultMutableTreeNode(new File(file.getPath().replace(file.getName(), "")+s)), parentNode, parentNode.getChildCount());
+        
+        model.removeNodeFromParent(node);
+        
     }
     private String getFileDetails(File file) {
         if (file == null)
