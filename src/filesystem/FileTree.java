@@ -64,7 +64,7 @@ public class FileTree extends JFrame{
     public FileTree(File[] Dir){
         InVisibleRoot = new DefaultMutableTreeNode();
         for(File f : Dir){
-         node = new DefaultMutableTreeNode();
+         node = new DefaultMutableTreeNode(f);
          InVisibleRoot.add(node);
          findAllChild(node);
         }
