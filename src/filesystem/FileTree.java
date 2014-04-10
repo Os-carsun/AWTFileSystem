@@ -227,7 +227,6 @@ public class FileTree extends JFrame{
         File newDir = new File(file.getPath()+"/newDir");
         File parentFile = new File(file.getParent());
         newDir.mkdir();
-//          node.add(new DefaultMutableTreeNode(newDir));
         model.insertNodeInto(new DefaultMutableTreeNode(newDir), node, node.getChildCount());
         
     }
@@ -236,10 +235,9 @@ public class FileTree extends JFrame{
         node = (DefaultMutableTreeNode) fileTree.
                         getLastSelectedPathComponent();
         File file = (File) node.getUserObject();
-        file.delete();
-//          DefaultMutableTreeNode parent =(DefaultMutableTreeNode)node.getParent();
-//          parent.remove(node);
         model.removeNodeFromParent(node);
+        file.delete();
+        
            
     }
     private void rename(){
@@ -250,11 +248,8 @@ public class FileTree extends JFrame{
         String s = (String)JOptionPane.showInputDialog(this,"new file name",file.getName());
         file.renameTo(new File(file.getPath().replace(file.getName(), "")+s));
         
-        
-        model.insertNodeInto(new DefaultMutableTreeNode(new File(file.getPath().replace(file.getName(), "")+s)), parentNode, parentNode.getChildCount());
-        
-        model.removeNodeFromParent(node);
-        
+        node.setUserObject(new File(file.getPath().replace(file.getName(), "")+s));
+        model.nodeChanged(node);        
     }
     private String getFileDetails(File file) {
         if (file == null)
