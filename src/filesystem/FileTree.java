@@ -251,6 +251,7 @@ public class FileTree extends JFrame{
                 deleteChild(f);
             }
         }
+        parent.delete();
     }
     private void rename(){
         node = (DefaultMutableTreeNode) fileTree.
