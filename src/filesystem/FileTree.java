@@ -235,10 +235,22 @@ public class FileTree extends JFrame{
         node = (DefaultMutableTreeNode) fileTree.
                         getLastSelectedPathComponent();
         File file = (File) node.getUserObject();
-        model.removeNodeFromParent(node);
-        file.delete();
         
-           
+        deleteChild(file);
+        
+        model.removeNodeFromParent(node);
+
+    }
+    private void deleteChild(File parent){
+        if(parent.listFiles() == null){
+            parent.delete();
+            return;
+        }
+        else{
+            for(File f : parent.listFiles()){
+                deleteChild(f);
+            }
+        }
     }
     private void rename(){
         node = (DefaultMutableTreeNode) fileTree.
